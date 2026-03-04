@@ -122,7 +122,7 @@ watch(
         <Transition name="fade" mode="out-in">
           <h1
             :key="displayFolder"
-            class="font-bold folderName text-white text-3xl md:text-4xl lg:text-7xl truncate"
+            class="hidden lg:block font-bold folderName text-white text-3xl md:text-4xl lg:text-7xl truncate"
           >
             {{ displayFolder }}
           </h1>
