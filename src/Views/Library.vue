@@ -19,12 +19,28 @@ const showBookmarksOnly = ref(false)
 const previewFile = ref<any | null>(null)
 
 const fileTypes = [
-  'PDF', 'DOC', 'DOCX', 'XLS', 'XLSX', 'PPT', 'PPTX', 
-  'JPG', 'PNG', 'GIF', 'MP4', 'MP3', 'ZIP'
+  'PDF',
+  'DOC',
+  'DOCX',
+  'XLS',
+  'XLSX',
+  'PPT',
+  'PPTX',
+  'JPG',
+  'PNG',
+  'GIF',
+  'MP4',
+  'MP3',
+  'ZIP',
 ]
 
 const levelOptions = ['100 Level', '200 Level', '300 Level', '400 Level', '500 Level']
-const departmentOptions = ['Computer Science', 'Electrical Engineering', 'Mechanical Engineering', 'Civil Engineering']
+const departmentOptions = [
+  'Computer Science',
+  'Electrical Engineering',
+  'Mechanical Engineering',
+  'Civil Engineering',
+]
 const semesterOptions = ['First Semester', 'Second Semester']
 
 const selectedLevel = ref<string | null>(null)
@@ -125,18 +141,20 @@ const searchAllFiles = async (query: string): Promise<any[]> => {
   const searchQuery = `name contains '${query}' and trashed = false`
   const fields = 'files(id,name,mimeType,webViewLink,createdTime)'
   let pageToken = ''
-  
+
   do {
     const url = `https://www.googleapis.com/drive/v3/files?key=${API_KEY}&q=${encodeURIComponent(searchQuery)}&fields=${fields}${pageToken ? '&pageToken=' + pageToken : ''}&pageSize=100`
-    
+
     try {
       const response = await fetch(url)
       const data = await response.json()
       if (data.files) {
-        results.push(...data.files.map((f: any) => ({
-          ...f,
-          isFolder: f.mimeType === 'application/vnd.google-apps.folder'
-        })))
+        results.push(
+          ...data.files.map((f: any) => ({
+            ...f,
+            isFolder: f.mimeType === 'application/vnd.google-apps.folder',
+          })),
+        )
       }
       pageToken = data.nextPageToken || ''
     } catch (error) {
@@ -144,7 +162,7 @@ const searchAllFiles = async (query: string): Promise<any[]> => {
       break
     }
   } while (pageToken)
-  
+
   return results
 }
 
@@ -154,12 +172,12 @@ const handleSearch = async () => {
     searchResults.value = []
     return
   }
-  
+
   isSearching.value = true
   loading.value = true
-  
+
   searchResults.value = await searchAllFiles(searchQuery.value)
-  
+
   loading.value = false
 }
 
@@ -172,9 +190,9 @@ watch(searchQuery, (newVal) => {
 
 const files = computed(() => {
   let source = isSearching.value ? searchResults.value : allFiles.value
-  
+
   if (showBookmarksOnly.value) {
-    source = source.filter(f => bookmarks.value.includes(f.id))
+    source = source.filter((f) => bookmarks.value.includes(f.id))
   }
 
   if (activeFilter.value) {
@@ -242,7 +260,7 @@ const navigateTo = (folderId: string, index: number) => {
     searchQuery.value = ''
     activeFilter.value = null
     isSearching.value = false
-    libraryStore.setFolder('ICT215')
+    libraryStore.setFolder('')
     loadFiles(DRIVE_ID)
     return
   }
@@ -276,9 +294,9 @@ const closePreview = () => {
 
 const downloadFile = async (file: any, event: Event) => {
   event.stopPropagation()
-  
+
   const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`
-  
+
   try {
     const response = await fetch(downloadUrl)
     const blob = await response.blob()
@@ -358,26 +376,31 @@ const closeModal = () => {
 <template>
   <!-- Preview Modal -->
   <Transition name="fade">
-    <div 
-      v-if="previewFile" 
+    <div
+      v-if="previewFile"
       class="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
       @click="closePreview"
     >
-      <div 
-        class="bg-[#1C2330] rounded-lg p-4 max-w-4xl w-full mx-4" 
-        @click.stop
-      >
+      <div class="bg-[#1C2330] rounded-lg p-4 max-w-4xl w-full mx-4" @click.stop>
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-white text-xl">{{ previewFile.name }}</h3>
           <button @click="closePreview" class="text-white hover:text-red-400 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
           </button>
         </div>
-        <iframe 
-          :src="previewFile.webViewLink" 
+        <iframe
+          :src="previewFile.webViewLink"
           class="w-full h-[60vh] rounded border-0"
           allow="autoplay"
         ></iframe>
@@ -387,22 +410,18 @@ const closeModal = () => {
 
   <!-- Filter Modal -->
   <Transition name="modal">
-    <div 
-      v-if="filterOpen" 
+    <div
+      v-if="filterOpen"
       class="fixed inset-0 bg-[#0e1117c4] flex items-center justify-center z-30"
       @click="closeModal"
     >
-      <div 
-        class="p-px bg-linear-to-b from-[#151A22] to-[#A8D0E4] rounded-lg w-140" 
-        @click.stop
-      >
-        <div class="modalContainer flex flex-col gap-8 p-10 bg-[#0e1117] w-full text-white rounded-lg">
+      <div class="p-px bg-linear-to-b from-[#151A22] to-[#A8D0E4] rounded-lg w-140" @click.stop>
+        <div
+          class="modalContainer flex flex-col gap-8 p-10 bg-[#0e1117] w-full text-white rounded-lg"
+        >
           <div class="top flex justify-between items-center">
             <h1 class="text-5xl font-bold">Filter</h1>
-            <button 
-              @click="closeModal" 
-              class="hover:rotate-90 transition-transform duration-300"
-            >
+            <button @click="closeModal" class="hover:rotate-90 transition-transform duration-300">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="37"
@@ -444,7 +463,10 @@ const closeModal = () => {
               </svg>
             </button>
             <Transition name="dropdown">
-              <div v-if="levelDropdownOpen" class="absolute top-full left-0 w-full mt-2 bg-[#1C2330] rounded-lg overflow-hidden shadow-xl z-10">
+              <div
+                v-if="levelDropdownOpen"
+                class="absolute top-full left-0 w-full mt-2 bg-[#1C2330] rounded-lg overflow-hidden shadow-xl z-10"
+              >
                 <button
                   v-for="level in levelOptions"
                   :key="level"
@@ -482,7 +504,10 @@ const closeModal = () => {
               </svg>
             </button>
             <Transition name="dropdown">
-              <div v-if="departmentDropdownOpen" class="absolute top-full left-0 w-full mt-2 bg-[#1C2330] rounded-lg overflow-hidden shadow-xl z-10">
+              <div
+                v-if="departmentDropdownOpen"
+                class="absolute top-full left-0 w-full mt-2 bg-[#1C2330] rounded-lg overflow-hidden shadow-xl z-10"
+              >
                 <button
                   v-for="dept in departmentOptions"
                   :key="dept"
@@ -520,7 +545,10 @@ const closeModal = () => {
               </svg>
             </button>
             <Transition name="dropdown">
-              <div v-if="semesterDropdownOpen" class="absolute top-full left-0 w-full mt-2 bg-[#1C2330] rounded-lg overflow-hidden shadow-xl z-10">
+              <div
+                v-if="semesterDropdownOpen"
+                class="absolute top-full left-0 w-full mt-2 bg-[#1C2330] rounded-lg overflow-hidden shadow-xl z-10"
+              >
                 <button
                   v-for="sem in semesterOptions"
                   :key="sem"
@@ -535,38 +563,42 @@ const closeModal = () => {
           </div>
 
           <!-- Bookmarks Toggle -->
-          <button 
+          <button
             @click="showBookmarksOnly = !showBookmarksOnly"
             class="w-full text-left p-4 rounded-lg text-xl flex justify-between items-center transition-all duration-300"
             :class="showBookmarksOnly ? 'bg-[#5D737E]' : 'bg-[#1C2330]'"
           >
             <span>Show Bookmarks Only</span>
-            <svg 
+            <svg
               v-if="showBookmarksOnly"
-              xmlns="http://www.w3.org/2000/svg" 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
               fill="currentColor"
               class="text-yellow-400"
             >
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+              />
             </svg>
-            <svg 
+            <svg
               v-else
-              xmlns="http://www.w3.org/2000/svg" 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
               fill="none"
-              stroke="currentColor" 
+              stroke="currentColor"
               stroke-width="2"
             >
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+              />
             </svg>
           </button>
 
-          <button 
+          <button
             @click="applyFilter"
             class="text-center p-4 rounded-lg text-xl bg-[#5D737E] hover:bg-[#6d848e] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           >
@@ -578,7 +610,9 @@ const closeModal = () => {
   </Transition>
 
   <!-- Main Content -->
-  <div class="libraryBody p-4 md:p-6 lg:p-10 w-full h-full flex gap-4 md:gap-6 lg:gap-10 flex-col overflow-hidden">
+  <div
+    class="libraryBody p-4 md:p-6 lg:p-10 w-full h-full flex gap-4 md:gap-6 lg:gap-10 flex-col overflow-hidden"
+  >
     <nav class="flex flex-row gap-3 md:gap-6 lg:gap-10 shrink-0">
       <!-- Filter Button -->
       <button
@@ -613,9 +647,9 @@ const closeModal = () => {
           type="text"
           placeholder="Search..."
         />
-        <button 
-          v-if="searchQuery" 
-          @click="clearSearch" 
+        <button
+          v-if="searchQuery"
+          @click="clearSearch"
           class="ml-2 mr-2 hover:rotate-90 transition-transform duration-300"
         >
           <svg
@@ -666,32 +700,64 @@ const closeModal = () => {
         >
           {{ crumb.name }}
         </span>
-        <span v-if="index < breadcrumbs.length - 1" class="text-[#5D737E] text-sm md:text-lg mx-1 md:mx-2 shrink-0">></span>
+        <span
+          v-if="index < breadcrumbs.length - 1"
+          class="text-[#5D737E] text-sm md:text-lg mx-1 md:mx-2 shrink-0"
+          >></span
+        >
       </span>
     </div>
 
     <!-- Loading/Empty/Files State -->
     <div v-if="loading" class="text-white text-2xl flex items-center justify-center py-10">
-      <svg class="animate-spin h-8 w-8 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      <svg
+        class="animate-spin h-8 w-8 mr-3"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
       </svg>
       Loading...
     </div>
-    <div v-else-if="files.length === 0" class="text-[#9AA4B2] text-base md:text-xl lg:text-2xl flex flex-col items-center justify-center py-6 md:py-8 lg:py-10">
-      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-4 opacity-50">
+    <div
+      v-else-if="files.length === 0"
+      class="text-[#9AA4B2] text-base md:text-xl lg:text-2xl flex flex-col items-center justify-center py-6 md:py-8 lg:py-10"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="64"
+        height="64"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1"
+        class="mb-4 opacity-50"
+      >
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
       </svg>
       {{ searchQuery || activeFilter ? 'No files match your search' : 'This folder is empty' }}
     </div>
     <div v-else class="files h-full overflow-y-auto flex flex-col gap-5 pb-10">
-        <!-- Search Results Header -->
-        <Transition name="fade">
-          <div v-if="isSearching" class="text-[#9AA4B2] text-xl mb-2">
-            Found {{ searchResults.length }} file(s) matching "{{ searchQuery }}"
-          </div>
-        </Transition>
+      <!-- Search Results Header -->
+      <Transition name="fade">
+        <div v-if="isSearching" class="text-[#9AA4B2] text-xl mb-2">
+          Found {{ searchResults.length }} file(s) matching "{{ searchQuery }}"
+        </div>
+      </Transition>
 
       <!-- Folders First -->
       <TransitionGroup name="list" tag="div" class="flex flex-col gap-4">
@@ -732,7 +798,9 @@ const closeModal = () => {
           @click="handleClick(file)"
         >
           <div class="topPart flex flex-row justify-between">
-            <p class="text-white text-lg md:text-2xl lg:text-3xl truncate flex-1">{{ file.name }}</p>
+            <p class="text-white text-lg md:text-2xl lg:text-3xl truncate flex-1">
+              {{ file.name }}
+            </p>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="28"
@@ -749,11 +817,13 @@ const closeModal = () => {
           </div>
           <div class="bottomPart flex justify-between flex-row items-center">
             <p class="text-[#9AA4B2] text-base md:text-xl">{{ formatDate(file.createdTime) }}</p>
-            <div class="PurposeButtons flex gap-3 md:gap-4 lg:gap-5 justify-center flex-row items-center">
+            <div
+              class="PurposeButtons flex gap-3 md:gap-4 lg:gap-5 justify-center flex-row items-center"
+            >
               <p class="text-base md:text-lg lg:text-xl text-[#9AA4B2]">
                 {{ getFileExtension(file.name) }}
               </p>
-              <button 
+              <button
                 @click="toggleBookmark(file, $event)"
                 class="hover:scale-125 transition-transform duration-200"
                 :class="{ 'animate-bounce': isBookmarked(file.id) }"
@@ -771,10 +841,12 @@ const closeModal = () => {
                   stroke-linejoin="round"
                   :class="isBookmarked(file.id) ? 'text-yellow-400' : ''"
                 >
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                  />
                 </svg>
               </button>
-              <button 
+              <button
                 @click="previewFileFunc(file, $event)"
                 class="hover:scale-125 transition-transform duration-200 hover:text-blue-400"
               >
@@ -796,7 +868,7 @@ const closeModal = () => {
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               </button>
-              <button 
+              <button
                 @click="downloadFile(file, $event)"
                 class="hover:scale-125 transition-transform duration-200 hover:text-green-400"
               >
@@ -843,7 +915,9 @@ const closeModal = () => {
 
 .modal-enter-active .p-px,
 .modal-leave-active .p-px {
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-out;
 }
 
 .modal-enter-from .p-px {
@@ -905,12 +979,12 @@ const closeModal = () => {
 }
 
 .files::-webkit-scrollbar-track {
-  background: #1C2330;
+  background: #1c2330;
   border-radius: 4px;
 }
 
 .files::-webkit-scrollbar-thumb {
-  background: #5D737E;
+  background: #5d737e;
   border-radius: 4px;
 }
 

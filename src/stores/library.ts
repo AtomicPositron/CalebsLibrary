@@ -169,7 +169,7 @@ const store = {
 
   setFolder(name: string, description: string = '') {
     this.currentFolder = name
-    this.currentDescription = description || generateDescription(name)
+    this.currentDescription = name ? description || generateDescription(name) : ''
     this.currentIcon = getIconForCourse(name)
   },
 }
